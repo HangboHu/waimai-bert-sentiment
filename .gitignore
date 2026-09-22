@@ -112,3 +112,6 @@ Thumbs.db
 # ==========================================
 node_modules/
 front/dist/
+frontend/dist/
+.playwright-cli/
+output/playwright/
