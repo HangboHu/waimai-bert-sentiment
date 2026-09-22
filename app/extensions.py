@@ -37,7 +37,7 @@ class TextClassifierExtension:
 
     def warmup(self):
         """模型预热方法"""
-        _ = self.model, self.class_labels, self.preprocessor, self.tokenizer
+        _ = self.model, self.class_labels, self.tokenizer
         # self.model.predict("hello world")   # 将重要参数加载到缓存
 
 
@@ -48,7 +48,8 @@ class TextClassifierExtension:
             with self._lock:
                 if self._model is None:
                     print("=======正在加载模型========")
-                    self._model = AutoModelForSequenceClassification.from_pretrained(self._model_path)
+                    self._model = AutoModelForSequenceClassification.from_pretrained(self._model_path).to(self.device)
+                    self._model.eval()
                     print("=======模型加载完成========")
         return self._model
 
