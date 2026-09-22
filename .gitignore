@@ -113,5 +113,8 @@ Thumbs.db
 node_modules/
 front/dist/
 frontend/dist/
+
+# Vite 依赖预构建缓存（本地生成，不应提交）
+.vite/
 .playwright-cli/
 output/playwright/
