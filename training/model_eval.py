@@ -6,7 +6,7 @@ from sklearn.metrics import accuracy_score
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 from common.preprocess import clean_text_for_bert
-from traning.config import Config
+from training.config import Config
 
 TRIALS = 128
 SAMPLES = 16

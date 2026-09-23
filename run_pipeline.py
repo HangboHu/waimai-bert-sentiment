@@ -1,8 +1,8 @@
 import sys
 from pathlib import Path
 
-from traning.model_train import train
-from traning.model_eval import evaluate
+from training.model_train import train
+from training.model_eval import evaluate
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent

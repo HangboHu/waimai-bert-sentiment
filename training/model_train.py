@@ -8,8 +8,8 @@ from torch.optim import AdamW
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
-from traning.config  import Config
-from traning.dataset import load_corpus, WaimaiDataset
+from training.config  import Config
+from training.dataset import load_corpus, WaimaiDataset
 
 
 def train():

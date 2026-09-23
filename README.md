@@ -26,13 +26,11 @@
 │   └── pre/                 # 预处理后的数据输出目录
 ├── frontend/                # Vue 3 + Vite 前端
 ├── model/                   # 本地 BERT 基座、微调模型和标签文件（已忽略）
-├── traning/                 # 训练、数据集和评估代码
+├── training/                # 训练、数据集和评估代码
 ├── run_pipeline.py          # 离线训练与评估入口
 ├── requirements.txt         # Python 通用依赖
 └── wsgi.py                  # Flask 服务入口
 ```
-
-> `traning` 是项目中已有的目录名。为避免影响现有导入路径，未更改为 `training`。
 
 ## 工作原理
 
@@ -57,10 +55,10 @@ flowchart LR
 
 | 位置 | 职责 | 与其他模块的关系 |
 | --- | --- | --- |
-| `data/raw/` | 保存训练、验证、测试 CSV。每行是 `数值标签,评价文本`。 | 被 `traning/dataset.py` 和 `traning/model_eval.py` 读取。 |
+| `data/raw/` | 保存训练、验证、测试 CSV。每行是 `数值标签,评价文本`。 | 被 `training/dataset.py` 和 `training/model_eval.py` 读取。 |
 | `data/pre/` | 预处理数据的预留输出目录。 | 当前 `run_pipeline.py` 标记数据准备为待补充，训练实际直接读取 `data/raw/`。 |
 | `common/preprocess.py` | 清理 HTML、表情和不可见字符，标准化文本。 | 离线训练、评估和在线推理共用，保证三者的输入规则一致。 |
-| `traning/` | 离线训练域：配置、数据集、训练和评估。 | 读取原始数据和 BERT 基座，生成 `model/ft_bert_dir`。 |
+| `training/` | 离线训练域：配置、数据集、训练和评估。 | 读取原始数据和 BERT 基座，生成 `model/ft_bert_dir`。 |
 | `model/google-bert/bert-base-chinese/` | 中文 BERT 的预训练基座与原始分词器。 | 仅在离线训练时由 `model_train.py` 加载。 |
 | `model/ft_bert_dir/` | 微调完成后的分类模型与分词器。 | 训练写入；评估和 Flask 服务读取。 |
 | `model/thy_labels.txt` | 类别编号到中文标签的映射，每行一个标签。 | 在线推理将模型输出的类别索引转为 `好评`、`差评` 等文本。文件顺序必须与训练标签编号一致。 |
@@ -71,14 +69,14 @@ flowchart LR
 
 ### 离线训练实现
 
-1. `run_pipeline.py` 调用 `traning.model_train.train()`。
-2. `traning/dataset.py` 从 `data/raw/train.csv` 读取样本；`load_corpus()` 使用 `common.preprocess.clean_text_for_bert()` 清洗每一行，再拆分数值标签与评价文本。
+1. `run_pipeline.py` 调用 `training.model_train.train()`。
+2. `training/dataset.py` 从 `data/raw/train.csv` 读取样本；`load_corpus()` 使用 `common.preprocess.clean_text_for_bert()` 清洗每一行，再拆分数值标签与评价文本。
 3. `WaimaiDataset` 使用 BERT 分词器编码文本，统一截断或填充为 32 个 token，并返回 `input_ids`、`attention_mask` 与标签张量。
-4. `traning/model_train.py` 加载 `model/google-bert/bert-base-chinese`，创建两个类别的序列分类模型。训练时优先使用 CUDA；嵌入层和前 3 个编码层被冻结，优化器更新第 7 层至最后一层及分类器。
+4. `training/model_train.py` 加载 `model/google-bert/bert-base-chinese`，创建两个类别的序列分类模型。训练时优先使用 CUDA；嵌入层和前 3 个编码层被冻结，优化器更新第 7 层至最后一层及分类器。
 5. 训练完成后，模型权重和分词器通过 `save_pretrained()` 写入 `model/ft_bert_dir`。
-6. `run_pipeline.py` 随后调用 `traning.model_eval.evaluate()`：它从 `data/raw/test.csv` 随机抽取样本，以相同的清洗和长度规则推理，输出平均准确率与单批耗时。
+6. `run_pipeline.py` 随后调用 `training.model_eval.evaluate()`：它从 `data/raw/test.csv` 随机抽取样本，以相同的清洗和长度规则推理，输出平均准确率与单批耗时。
 
-验证集路径已在 `traning/config.py` 中定义；当前训练函数尚未在每个 epoch 中使用验证集进行早停或模型选择。`run_pipeline.py` 的数据准备、模型压缩及压缩后评估步骤目前是预留的待实现项。
+验证集路径已在 `training/config.py` 中定义；当前训练函数尚未在每个 epoch 中使用验证集进行早停或模型选择。`run_pipeline.py` 的数据准备、模型压缩及压缩后评估步骤目前是预留的待实现项。
 
 ### 在线推理实现
 
@@ -241,7 +239,7 @@ curl.exe -X POST http://127.0.0.1:8000/api/v1/classify_from_file `
 python run_pipeline.py
 ```
 
-流水线将训练模型、保存到 `model/ft_bert_dir`，并使用 `data/raw/test.csv` 做评估。当前训练配置使用 20 个 epoch、批大小 256、4 个 DataLoader 工作进程；请根据显存、CPU 核数和数据规模调整 [traning/model_train.py](traning/model_train.py) 中的参数。
+流水线将训练模型、保存到 `model/ft_bert_dir`，并使用 `data/raw/test.csv` 做评估。当前训练配置使用 20 个 epoch、批大小 256、4 个 DataLoader 工作进程；请根据显存、CPU 核数和数据规模调整 [training/model_train.py](training/model_train.py) 中的参数。
 
 ## 构建前端
 
