@@ -3,7 +3,6 @@ preprocess - 文本预处理（离线训练与在线推理共用）
 
 单条文本级处理：正则清洗 → jieba 分词 → 去停用词
 
-Author: 骆昊
 Version: 0.0.1
 """
 import html

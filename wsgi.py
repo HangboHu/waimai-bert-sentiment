@@ -1,7 +1,6 @@
 """
 wsgi - Web 项目启动入口
 
-Author: 骆昊
 Version: 0.0.1
 """
 from app import create_app

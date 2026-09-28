@@ -15,7 +15,6 @@ Flask 应用工厂与核心生命周期管理模块
     >>>
     >>> app = create_app()
 
-Author: 骆昊
 Version: 0.0.1
 """
 import os
